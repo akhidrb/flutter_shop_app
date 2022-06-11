@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:udemy_shop_app/screens/edit_product_screen.dart';
+
+import '../providers/products.dart';
 
 class UserProductItem extends StatelessWidget {
   final String id;
@@ -27,7 +30,32 @@ class UserProductItem extends StatelessWidget {
               color: Theme.of(context).primaryColor,
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Are you sure?'),
+                    content: const Text(
+                      'Do you want to delete product ?',
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop(false);
+                        },
+                        child: const Text('No'),
+                      ),
+                      FlatButton(
+                        onPressed: () {
+                          Provider.of<Products>(context, listen: false).deleteProduct(id);
+                          Navigator.of(ctx).pop(true);
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  ),
+                );
+              },
               icon: const Icon(Icons.delete),
               color: Theme.of(context).errorColor,
             ),
