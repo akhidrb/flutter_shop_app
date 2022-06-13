@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
 import 'product.dart';
 
 class Products with ChangeNotifier {
@@ -37,6 +38,8 @@ class Products with ChangeNotifier {
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     ),
   ];
+  static const baseUrl =
+      'flutter-shop-app-dff32-default-rtdb.europe-west1.firebasedatabase.app';
 
   List<Product> get items {
     return [..._items];
@@ -51,6 +54,17 @@ class Products with ChangeNotifier {
   }
 
   void addProduct(Product product) {
+    var url = Uri.https(baseUrl, '/products.json');
+    http.post(
+      url,
+      body: json.encode({
+        'title': product.title,
+        'description': product.description,
+        'imageUrl': product.imageUrl,
+        'price': product.price,
+        'isFavorite': product.isFavorite,
+      }),
+    );
     final newProduct = Product(
       id: DateTime.now().toString(),
       title: product.title,
@@ -72,5 +86,4 @@ class Products with ChangeNotifier {
     _items.removeWhere((prod) => prod.id == id);
     notifyListeners();
   }
-
 }
