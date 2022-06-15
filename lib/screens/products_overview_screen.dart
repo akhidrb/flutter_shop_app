@@ -4,6 +4,7 @@ import 'package:udemy_shop_app/providers/cart.dart';
 import 'package:udemy_shop_app/screens/cart_screen.dart';
 import 'package:udemy_shop_app/widgets/app_drawer.dart';
 import 'package:udemy_shop_app/widgets/badge.dart';
+import '../providers/products.dart';
 import '../widgets/products_grid.dart';
 
 enum FilterOptions {
@@ -18,6 +19,20 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showFavoritesOnly = false;
+  var _isInit = true;
+  var _isLoading = false;
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() => _isLoading = true);
+      Provider.of<Products>(context).fetchAndSetProducts().then((value) {
+        setState(() => _isLoading = false);
+      });
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +53,12 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
             icon: const Icon(Icons.more_vert),
             itemBuilder: (_) => [
               const PopupMenuItem(
-                child: Text('Only Favorites'),
                 value: FilterOptions.Favorites,
+                child: Text('Only Favorites'),
               ),
               const PopupMenuItem(
-                child: Text('Show All'),
                 value: FilterOptions.All,
+                child: Text('Show All'),
               ),
             ],
           ),
@@ -62,7 +77,11 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductsGrid(_showFavoritesOnly),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductsGrid(_showFavoritesOnly),
     );
   }
 }
