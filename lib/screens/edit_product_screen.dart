@@ -51,6 +51,23 @@ class _EditProductScreenState extends State<EditProductScreen> {
     super.didChangeDependencies();
   }
 
+  Future<void> _handleError() {
+    return showDialog<Null>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('An error occurred!'),
+          content: const Text('Something went wrong'),
+          actions: [
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: const Text('Okay'),
+            )
+          ],
+        ));
+  }
+
   void _saveForm() {
     final isValid = _form.currentState?.validate();
     if (!isValid!) {
@@ -60,26 +77,19 @@ class _EditProductScreenState extends State<EditProductScreen> {
     setState(() => _isLoading = true);
     if (_editedProduct.id != '') {
       Provider.of<Products>(context, listen: false)
-          .updateProduct(_editedProduct);
-      setState(() => _isLoading = false);
+          .updateProduct(_editedProduct)
+          .then((_) {
+        setState(() => _isLoading = false);
+        Navigator.of(context).pop();
+      }).catchError((error) {
+        setState(() => _isLoading = false);
+        _handleError();
+      });
     } else {
       Provider.of<Products>(context, listen: false)
           .addProduct(_editedProduct)
           .catchError((error) {
-        return showDialog<Null>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-                  title: const Text('An error occurred!'),
-                  content: const Text('Something went wrong'),
-                  actions: [
-                    FlatButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                      },
-                      child: const Text('Okay'),
-                    )
-                  ],
-                ));
+        return _handleError();
       }).then((_) {
         setState(() => _isLoading = true);
         Navigator.of(context).pop();

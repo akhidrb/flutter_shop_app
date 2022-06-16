@@ -51,7 +51,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> fetchAndSetProducts() async {
-    var url = Uri.https(baseUrl, '/products.json');
+    final url = Uri.https(baseUrl, '/products.json');
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
@@ -74,10 +74,25 @@ class Products with ChangeNotifier {
     }
   }
 
-  void updateProduct(Product product) {
+  Future<void> updateProduct(Product product) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == product.id);
-    _items[prodIndex] = product;
-    notifyListeners();
+    if (prodIndex >= 0) {
+      try {
+        final url = Uri.https(baseUrl, '/products/${product.id}.json');
+        await http.patch(url,
+            body: json.encode({
+              'title': product.title,
+              'description': product.description,
+              'price': product.price,
+              'imageUrl': product.imageUrl,
+            }));
+        _items[prodIndex] = product;
+        notifyListeners();
+      } catch (error) {
+        print(error);
+        rethrow;
+      }
+    }
   }
 
   void deleteProduct(String id) {
