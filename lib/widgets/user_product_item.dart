@@ -11,6 +11,23 @@ class UserProductItem extends StatelessWidget {
 
   UserProductItem(this.id, this.title, this.imageUrl);
 
+  void _handleError(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: const Text('An error occurred!'),
+              content: const Text('Something went wrong'),
+              actions: [
+                FlatButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: const Text('Okay'),
+                )
+              ],
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -24,7 +41,8 @@ class UserProductItem extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () {
-                Navigator.of(context).pushNamed(EditProductScreen.routeName, arguments: id);
+                Navigator.of(context)
+                    .pushNamed(EditProductScreen.routeName, arguments: id);
               },
               icon: const Icon(Icons.edit),
               color: Theme.of(context).primaryColor,
@@ -47,8 +65,19 @@ class UserProductItem extends StatelessWidget {
                       ),
                       FlatButton(
                         onPressed: () {
-                          Provider.of<Products>(context, listen: false).deleteProduct(id);
-                          Navigator.of(ctx).pop(true);
+                          Provider.of<Products>(context, listen: false)
+                              .deleteProduct(id)
+                              .then((_) {
+                            Navigator.of(ctx).pop(true);
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text('Product Deleted!'),
+                              duration: Duration(seconds: 2),
+                            ));
+                          }).catchError((error) {
+                            Navigator.of(ctx).pop(true);
+                            _handleError(context);
+                          });
                         },
                         child: const Text('Yes'),
                       ),

@@ -95,8 +95,18 @@ class Products with ChangeNotifier {
     }
   }
 
-  void deleteProduct(String id) {
-    _items.removeWhere((prod) => prod.id == id);
-    notifyListeners();
+  Future<void> deleteProduct(String id) async {
+    try {
+      final url = Uri.https(baseUrl, '/products/$id.json');
+      final response = await http.delete(url);
+      if (response.statusCode >= 400) {
+        throw Exception();
+      }
+      _items.removeWhere((prod) => prod.id == id);
+      notifyListeners();
+    } catch (error) {
+      print(error);
+      rethrow;
+    }
   }
 }
